@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>XAUUSD Cent Risk Tool - MT5 Style</title>
+<style>
+body {
+    background:#0b0f14;
+    color:#e0e0e0;
+    font-family: Arial, sans-serif;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+.app {
+    background:#121820;
+    border-radius:12px;
+    padding:20px;
+    width:360px;
+    box-shadow:0 0 20px rgba(0,0,0,0.6);
+}
+h2 {text-align:center;color:#4fc3f7;}
+label {display:block;margin-top:10px;color:#90caf9;}
+input {
+    width:100%;
+    padding:8px;
+    margin-top:4px;
+    background:#1c2533;
+    border:1px solid #333;
+    color:#fff;
+    border-radius:5px;
+}
+.risk-buttons {
+    display:flex;
+    justify-content:space-between;
+    margin-top:10px;
+}
+.risk-buttons button {
+    width:18%;
+    padding:8px;
+    border:none;
+    border-radius:4px;
+    font-weight:bold;
+    cursor:pointer;
+}
+.risk-buttons button:nth-child(1){background:#1b5e20;}
+.risk-buttons button:nth-child(2){background:#2e7d32;}
+.risk-buttons button:nth-child(3){background:#f9a825;}
+.risk-buttons button:nth-child(4){background:#ef6c00;}
+.risk-buttons button:nth-child(5){background:#c62828;}
+
+.result {
+    margin-top:12px;
+    background:#0d1117;
+    padding:10px;
+    border-radius:6px;
+    font-weight:bold;
+    white-space:pre-line;
+    border-left:4px solid #00e676;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+    <h2>Tính lot XAUUSD</h2>
+
+    <label>Balance (cent)</label>
+    <input type="number" id="balance" inputmode="numeric">
+
+    <label>Entry</label>
+    <input type="number" id="entry" step="0.01" inputmode="decimal">
+
+    <label>Stop Loss</label>
+    <input type="number" id="sl" step="0.01" inputmode="decimal">
+
+    <label>Take Profit</label>
+    <input type="number" id="tp" step="0.01" inputmode="decimal">
+
+    <div class="risk-buttons">
+        <button onclick="calc(1)">1%</button>
+        <button onclick="calc(2)">2%</button>
+        <button onclick="calc(3)">3%</button>
+        <button onclick="calc(4)">4%</button>
+        <button onclick="calc(5)">5%</button>
+    </div>
+
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+function calc(riskPercent){
+    const balance = parseFloat(document.getElementById("balance").value);
+    const entry = parseFloat(document.getElementById("entry").value);
+    const sl = parseFloat(document.getElementById("sl").value);
+    const tp = parseFloat(document.getElementById("tp").value);
+
+    const riskCent = balance * riskPercent / 100;
+    const dSL = Math.abs(entry - sl);
+    const dTP = Math.abs(tp - entry);
+
+    // 0.01 lot đi 1 giá = 100 cent
+    const lotCent = Math.round((riskCent / (dSL * 100)) * 100) / 100;
+    const lotStd = lotCent / 100;
+
+    const loss = lotCent * dSL * 100;
+    const profit = lotCent * dTP * 100;
+    const rr = profit / loss;
+
+    const text =
+`SL: ${dSL.toFixed(2)} giá | TP: ${dTP.toFixed(2)} giá
+
+Lot Cent: ${lotCent.toFixed(2)}
+Lot Standard: ${lotStd.toFixed(4)}
+
+Lỗ khi SL: ${loss.toFixed(0)} cent (~$${(loss/100).toFixed(2)})
+Lời khi TP: ${profit.toFixed(0)} cent (~$${(profit/100).toFixed(2)})
+
+RR thực: 1 : ${rr.toFixed(2)}`;
+
+    document.getElementById("result").innerText = text;
+}
+</script>
+
+</body>
+</html>
