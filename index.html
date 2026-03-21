@@ -3,207 +3,423 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Công cụ tính lot Vàng (Cent)</title>
-
+<title>Tinh Lot Vang Cent</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap');
 :root{
-  --bg:#000000;
-  --card:#0f0f0f;
-  --muted:#9aa4ad;
-  --accent:#1e88e5;
-  --success:#00c853;
-  --danger:#d50000;
-  --surface:#050505;
+  --card:#0a0a0a;--border:#1a1a1a;--muted:#4a5568;--muted2:#718096;
+  --accent:#f59e0b;--success:#10b981;--danger:#ef4444;--blue:#3b82f6;
+  --purple:#a78bfa;--orange:#fb923c;--text:#e2e8f0;
 }
-*{box-sizing:border-box}
-body{
-  margin:0;
-  min-height:100vh;
-  background:#000;
-  color:#e6eef6;
-  font-family:system-ui,Segoe UI,Roboto,Arial;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding:10px;
-}
-.container{
-  width:100%;
-  max-width:420px;
-  background:var(--card);
-  border-radius:14px;
-  padding:16px;
-  box-shadow:0 0 20px rgba(0,0,0,.8);
-}
-h1{
-  margin:0 0 6px;
-  font-size:18px;
-  color:var(--accent);
-  text-align:center;
-}
-p{
-  margin:0 0 12px;
-  font-size:12px;
-  color:var(--muted);
-  text-align:center;
-}
-label{font-size:13px;color:var(--muted)}
-input{
-  width:100%;
-  padding:12px;
-  border-radius:10px;
-  border:1px solid #222;
-  background:#111;
-  color:#fff;
-  font-size:16px;
-  margin-top:4px;
-}
-.grid{display:grid;gap:10px}
-.controls{margin-top:10px}
-.risk-row{
-  display:flex;
-  gap:6px;
-  align-items:center;
-}
-.risk-row input[type=number]{
-  width:70px;
-  text-align:center;
-}
-.risk-buttons{
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:6px;
-  margin-top:8px;
-}
-button{
-  padding:10px;
-  border-radius:10px;
-  border:none;
-  font-weight:bold;
-  color:white;
-  background:linear-gradient(180deg,#1e88e5,#1565c0);
-}
-.result{
-  margin-top:12px;
-  background:var(--surface);
-  padding:12px;
-  border-radius:10px;
-  border-left:4px solid var(--success);
-  white-space:pre-wrap;
-  font-family:monospace;
-  font-size:13px;
-}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:#000;color:var(--text);font-family:'Syne',sans-serif;display:flex;justify-content:center;align-items:flex-start;padding:16px 10px 50px}
+.container{width:100%;max-width:440px}
+
+.header{text-align:center;padding:16px 20px 12px;background:var(--card);border-radius:16px;border:1px solid var(--border);margin-bottom:10px;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:200px;height:80px;background:radial-gradient(ellipse,rgba(245,158,11,.15),transparent 70%);pointer-events:none}
+.header h1{font-size:19px;font-weight:800;color:var(--accent);letter-spacing:2px;text-transform:uppercase}
+.header p{font-size:11px;color:var(--muted2);margin-top:3px;font-family:'JetBrains Mono',monospace}
+
+.mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:10px;border-radius:13px;overflow:hidden;border:1px solid var(--border)}
+.mode-switch-btn{padding:13px 8px;text-align:center;cursor:pointer;border:none;background:#0c0c0c;color:var(--muted2);font-family:'Syne',sans-serif;font-weight:700;font-size:12px;transition:all .2s;letter-spacing:.5px;line-height:1.4}
+.mode-switch-btn .tag{font-size:9px;font-weight:400;opacity:.7;display:block;margin-top:2px;letter-spacing:1px;text-transform:uppercase}
+.mode-switch-btn.active-a{background:rgba(16,185,129,.12);color:var(--success)}
+.mode-switch-btn.active-b{background:rgba(59,130,246,.12);color:var(--blue)}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:15px;margin-bottom:10px}
+.card-title{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;margin-bottom:11px}
+
+.field{margin-bottom:10px}
+.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:11px;font-weight:600;color:var(--muted2);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
+.hint{font-weight:400;color:var(--muted);font-size:10px;text-transform:none;letter-spacing:0}
+input[type=number]{width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--border);background:#0f0f0f;color:#fff;font-size:15px;font-family:'JetBrains Mono',monospace;transition:border-color .2s,box-shadow .2s;-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+input[type=number]:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(245,158,11,.1)}
+input.computed{border-color:rgba(59,130,246,.45);background:#070d18;color:#93c5fd}
+input.computed-green{border-color:rgba(16,185,129,.45);background:#071410;color:#6ee7b7}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.dir-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:11px}
+.dir-btn{padding:10px;border-radius:9px;border:2px solid var(--border);background:#0f0f0f;color:var(--muted2);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:1px}
+.dir-btn.buy.active{background:rgba(16,185,129,.12);border-color:var(--success);color:var(--success)}
+.dir-btn.sell.active{background:rgba(239,68,68,.12);border-color:var(--danger);color:var(--danger)}
+
+.risk-label-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.risk-label-row .lbl{font-size:11px;font-weight:700;color:var(--muted2);letter-spacing:1px;text-transform:uppercase}
+.risk-badge{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--accent);background:rgba(245,158,11,.1);padding:3px 10px;border-radius:20px;border:1px solid rgba(245,158,11,.22)}
+input[type=range]{-webkit-appearance:none;width:100%;height:4px;border-radius:4px;background:var(--border);outline:none;margin-bottom:9px;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 8px rgba(245,158,11,.45);transition:transform .15s}
+input[type=range]::-webkit-slider-thumb:active{transform:scale(1.25)}
+
+.btn-row{display:grid;gap:6px}
+.btn-row.cols5{grid-template-columns:repeat(5,1fr)}
+.btn-row.cols4{grid-template-columns:repeat(4,1fr)}
+.qbtn{padding:8px 4px;border-radius:8px;border:1px solid var(--border);background:#111;color:var(--muted2);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+.qbtn:hover,.qbtn.active{background:rgba(245,158,11,.15);border-color:var(--accent);color:var(--accent)}
+
+.rr-label{font-size:11px;font-weight:700;color:var(--muted2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+
+.warn-banner{display:flex;align-items:flex-start;gap:10px;padding:10px 13px;border-radius:11px;margin-bottom:10px;font-size:12px;font-weight:600;border:1px solid}
+.warn-banner.safe{background:rgba(16,185,129,.07);border-color:rgba(16,185,129,.3);color:var(--success)}
+.warn-banner.caution{background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.32);color:var(--accent)}
+.warn-banner.danger{background:rgba(239,68,68,.09);border-color:rgba(239,68,68,.5);color:var(--danger);animation:fb 1.5s infinite}
+@keyframes fb{0%,100%{border-color:rgba(239,68,68,.5)}50%{border-color:rgba(239,68,68,.95)}}
+.warn-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.warn-title{font-size:12px;font-weight:800;letter-spacing:.5px;margin-bottom:2px}
+.warn-desc{font-size:11px;font-weight:400;opacity:.85;line-height:1.5}
+
+.result-card{background:var(--card);border:1px solid var(--border);border-radius:13px;overflow:hidden;margin-bottom:10px}
+.result-card .card-title{padding:13px 15px 0;margin-bottom:8px}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:9px 15px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:13px}
+.result-row:last-child{border-bottom:none}
+.result-row .lbl{color:var(--muted2);font-size:11px;font-weight:600;letter-spacing:.4px}
+.result-row .val{font-weight:700;color:#fff}
+.result-row.highlight .val{color:var(--accent);font-size:15px}
+.result-row.loss .val{color:var(--danger)}
+.result-row.profit .val{color:var(--success)}
+.result-row.rr-row .val{color:var(--blue)}
+.result-row.pip-row .val{color:var(--purple)}
+.result-row.computed-row .val{color:#93c5fd}
+.empty-state{padding:22px;text-align:center;color:var(--muted);font-size:13px;font-family:'JetBrains Mono',monospace}
 </style>
 </head>
-
 <body>
 <div class="container">
-  <h1>TÍNH LOT VÀNG (CENT)</h1>
-  <p>0.01 lot đi 1 giá = 100 cent</p>
 
-  <div class="grid">
-    <div>
-      <label>Balance (cent)</label>
-      <input id="balance" type="number" inputmode="numeric" placeholder="VD: 5000">
-    </div>
+  <div class="header">
+    <h1>&#127881; TINH LOT VANG</h1>
+    <p>0.01 lot &bull; 1 gia = 100 cent &bull; Cent Account</p>
+  </div>
 
-    <div>
-      <label>Entry</label>
-      <input id="entry" type="number" step="0.01" inputmode="decimal">
-    </div>
+  <div class="mode-switch">
+    <button class="mode-switch-btn active-a" id="btnModeA" onclick="setMainMode('A')">
+      &#128200; Fix SL &#8594; Tinh Lot
+      <span class="tag">Nhap SL thu cong</span>
+    </button>
+    <button class="mode-switch-btn" id="btnModeB" onclick="setMainMode('B')">
+      &#127919; Fix Lot &#8594; Tinh SL
+      <span class="tag">Chon lot thu cong</span>
+    </button>
+  </div>
 
-    <div>
-      <label>Stop Loss</label>
-      <input id="sl" type="number" step="0.01" inputmode="decimal">
-    </div>
-
-    <div>
-      <label>Take Profit</label>
-      <input id="tp" type="number" step="0.01" inputmode="decimal">
+  <div class="card">
+    <div class="card-title">Tai khoan</div>
+    <div class="field">
+      <label>Balance <span class="hint">(cent)</span></label>
+      <input id="balance" type="number" inputmode="numeric" placeholder="VD: 5000" oninput="calc()">
     </div>
   </div>
 
-  <div class="controls">
-    <label>Rủi ro (%)</label>
-    <div class="risk-row">
-      <input id="riskSlider" type="range" min="1" max="100" step="1" value="1" style="flex:1">
-      <input id="riskInput" type="number" min="1" max="100" value="1">
-    </div>
-    <div style="font-size:12px;color:#90caf9">Đang chọn: <b id="riskVal">1%</b></div>
-
-    <div class="risk-buttons">
-      <button onclick="setRisk(1)">1%</button>
-      <button onclick="setRisk(2)">2%</button>
-      <button onclick="setRisk(3)">3%</button>
-      <button onclick="setRisk(4)">4%</button>
-      <button onclick="setRisk(5)">5%</button>
+  <!-- MODE A -->
+  <div id="panelA">
+    <div class="card">
+      <div class="card-title">Thiet lap lenh</div>
+      <div class="dir-row">
+        <button class="dir-btn buy active" id="dirBuyA" onclick="setDir('buy')">&#9650; BUY</button>
+        <button class="dir-btn sell" id="dirSellA" onclick="setDir('sell')">&#9660; SELL</button>
+      </div>
+      <div class="field">
+        <label>Entry</label>
+        <input id="entryA" type="number" step="0.01" inputmode="decimal" placeholder="VD: 3320.00">
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label>Stop Loss <span class="hint">(gia)</span></label>
+          <input id="slA" type="number" step="0.01" inputmode="decimal" placeholder="SL">
+        </div>
+        <div class="field">
+          <label>Take Profit <span class="hint" id="tpAhint" style="color:var(--success)">&#9679; Tu dong</span></label>
+          <input id="tpA" type="number" step="0.01" inputmode="decimal" placeholder="TP" class="computed-green">
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="result" id="result">Nhập dữ liệu rồi chọn % rủi ro</div>
+  <!-- MODE B -->
+  <div id="panelB" style="display:none">
+    <div class="card">
+      <div class="card-title">Thiet lap lenh</div>
+      <div class="dir-row">
+        <button class="dir-btn buy active" id="dirBuyB" onclick="setDir('buy')">&#9650; BUY</button>
+        <button class="dir-btn sell" id="dirSellB" onclick="setDir('sell')">&#9660; SELL</button>
+      </div>
+      <div class="field">
+        <label>Entry</label>
+        <input id="entryB" type="number" step="0.01" inputmode="decimal" placeholder="VD: 3320.00" oninput="calc()">
+      </div>
+      <div class="field">
+        <label>Lot Cent <span class="hint">(chon hoac nhap)</span></label>
+        <div class="btn-row cols5" style="margin-bottom:8px">
+          <button class="qbtn" id="lotBtn001" onclick="setLot(0.01,this)">0.01</button>
+          <button class="qbtn" id="lotBtn005" onclick="setLot(0.05,this)">0.05</button>
+          <button class="qbtn" id="lotBtn01"  onclick="setLot(0.1,this)">0.10</button>
+          <button class="qbtn" id="lotBtn05"  onclick="setLot(0.5,this)">0.50</button>
+          <button class="qbtn" id="lotBtn1"   onclick="setLot(1,this)">1.00</button>
+        </div>
+        <input id="lotB" type="number" step="0.01" inputmode="decimal" placeholder="VD: 0.10" oninput="calc()">
+      </div>
+      <div class="grid2" style="margin-top:4px">
+        <div class="field">
+          <label style="color:var(--blue)">&#9679; SL (tu tinh)</label>
+          <input id="slBout" type="number" step="0.01" class="computed" readonly placeholder="--">
+        </div>
+        <div class="field">
+          <label style="color:var(--blue)">&#9679; TP (tu tinh)</label>
+          <input id="tpBout" type="number" step="0.01" class="computed" readonly placeholder="--">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Risk -->
+  <div class="card">
+    <div class="risk-label-row">
+      <span class="lbl">Rui ro</span>
+      <span class="risk-badge" id="riskBadge">1%</span>
+    </div>
+    <input id="riskSlider" type="range" min="0.5" max="20" step="0.5" value="1" oninput="syncRisk(this.value)">
+    <div class="btn-row cols5">
+      <button class="qbtn" onclick="setRisk(1)">1%</button>
+      <button class="qbtn" onclick="setRisk(2)">2%</button>
+      <button class="qbtn" onclick="setRisk(3)">3%</button>
+      <button class="qbtn" onclick="setRisk(5)">5%</button>
+      <button class="qbtn" onclick="setRisk(10)">10%</button>
+    </div>
+  </div>
+
+  <!-- R:R -->
+  <div class="card">
+    <div class="rr-label">Ti le R:R</div>
+    <div class="btn-row cols4">
+      <button class="qbtn" id="rr05" onclick="setRR(0.5)">1:0.5</button>
+      <button class="qbtn" id="rr1"  onclick="setRR(1)">1:1</button>
+      <button class="qbtn active" id="rr2" onclick="setRR(2)">1:2</button>
+      <button class="qbtn" id="rr3"  onclick="setRR(3)">1:3</button>
+    </div>
+    <div class="btn-row cols4" style="margin-top:6px">
+      <button class="qbtn" id="rr4"  onclick="setRR(4)">1:4</button>
+      <button class="qbtn" id="rr5"  onclick="setRR(5)">1:5</button>
+      <button class="qbtn" id="rr7"  onclick="setRR(7)">1:7</button>
+      <button class="qbtn" id="rr10" onclick="setRR(10)">1:10</button>
+    </div>
+  </div>
+
+  <div id="warnWrap"></div>
+
+  <div class="result-card">
+    <div class="card-title">Ket qua</div>
+    <div id="result"></div>
+  </div>
+
 </div>
-
 <script>
-const balanceEl = document.getElementById("balance");
-const entryEl = document.getElementById("entry");
-const slEl = document.getElementById("sl");
-const tpEl = document.getElementById("tp");
-const slider = document.getElementById("riskSlider");
-const input = document.getElementById("riskInput");
-const riskVal = document.getElementById("riskVal");
-const result = document.getElementById("result");
+let mainMode = 'A';
+let direction = 'buy';
+let rrRatio = 2;
+let currentRisk = 1;
+let tpAManual = false;
 
-slider.addEventListener("input", () => syncRisk(slider.value));
-input.addEventListener("input", () => syncRisk(input.value));
-
-function syncRisk(v){
-  let val = Math.min(100, Math.max(1, parseInt(v)));
-  slider.value = val;
-  input.value = val;
-  riskVal.textContent = val + "%";
-  calc(val);
+function setMainMode(m) {
+  mainMode = m;
+  document.getElementById('panelA').style.display = m==='A' ? '' : 'none';
+  document.getElementById('panelB').style.display = m==='B' ? '' : 'none';
+  document.getElementById('btnModeA').className = 'mode-switch-btn' + (m==='A' ? ' active-a' : '');
+  document.getElementById('btnModeB').className = 'mode-switch-btn' + (m==='B' ? ' active-b' : '');
+  calc();
 }
 
-function setRisk(v){
-  syncRisk(v);
+function setDir(d) {
+  direction = d;
+  ['A','B'].forEach(function(m) {
+    var buy  = document.getElementById('dirBuy'+m);
+    var sell = document.getElementById('dirSell'+m);
+    if (buy && sell) {
+      buy.classList.toggle('active', d==='buy');
+      sell.classList.toggle('active', d==='sell');
+    }
+  });
+  if (mainMode==='A') calcAutoTP_A();
+  calc();
 }
 
-function calc(riskPercent){
-  const balance = parseFloat(balanceEl.value);
-  const entry = parseFloat(entryEl.value);
-  const sl = parseFloat(slEl.value);
-  const tp = parseFloat(tpEl.value);
+function setRR(r) {
+  rrRatio = r;
+  document.querySelectorAll('[id^=rr]').forEach(function(b){ b.classList.remove('active'); });
+  var map = {0.5:'rr05',1:'rr1',2:'rr2',3:'rr3',4:'rr4',5:'rr5',7:'rr7',10:'rr10'};
+  if (map[r]) document.getElementById(map[r]).classList.add('active');
+  if (mainMode==='A') calcAutoTP_A();
+  calc();
+}
 
-  if(!balance || !entry || !sl){
-    result.innerText = "Vui lòng nhập Balance, Entry và SL";
+function setRisk(v) { syncRisk(v); }
+function syncRisk(v) {
+  var val = Math.min(20, Math.max(0.5, parseFloat(v)));
+  document.getElementById('riskSlider').value = val;
+  document.getElementById('riskBadge').textContent = val + '%';
+  currentRisk = val;
+  calc();
+}
+
+function setLot(v, btn) {
+  document.getElementById('lotB').value = v;
+  document.querySelectorAll('#panelB .qbtn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  calc();
+}
+
+function calcAutoTP_A() {
+  var entry = parseFloat(document.getElementById('entryA').value);
+  var sl    = parseFloat(document.getElementById('slA').value);
+  if (!entry || !sl || isNaN(entry) || isNaN(sl)) return;
+  var dSL = Math.abs(entry - sl);
+  var dTP = dSL * rrRatio;
+  var tp  = direction==='buy' ? entry+dTP : entry-dTP;
+  var tpEl = document.getElementById('tpA');
+  tpEl.value = tp.toFixed(2);
+  tpEl.className = 'computed-green';
+  tpAManual = false;
+  document.getElementById('tpAhint').innerHTML = '<span style="color:var(--success)">&#9679; Tu dong</span>';
+  calc();
+}
+
+function onTpAManual() {
+  tpAManual = true;
+  document.getElementById('tpA').className = '';
+  document.getElementById('tpAhint').innerHTML = '<span style="color:var(--muted2)">Thu cong</span>';
+  calc();
+}
+
+function renderWarning(lotCent, balance) {
+  var pct = (lotCent / balance) * 100;
+  var cls, icon, title, desc;
+  if (pct < 0.4) {
+    cls='safe'; icon='&#9989;'; title='AN TOAN';
+    desc='Kich co lot phu hop voi balance. Quan ly von tot!';
+  } else if (pct < 1.2) {
+    cls='caution'; icon='&#9888;&#65039;'; title='CAN THAN';
+    desc='Lot kha lon so voi balance. Kiem tra lai SL va % rui ro.';
+  } else {
+    cls='danger'; icon='&#128683;'; title='NGUY HIEM — OVERSIZE!';
+    desc='Lot qua lon so voi balance. Co the bi margin call. Hay giam lot hoac tang balance.';
+  }
+  document.getElementById('warnWrap').innerHTML =
+    '<div class="warn-banner '+cls+'">' +
+      '<span class="warn-icon">'+icon+'</span>' +
+      '<div><div class="warn-title">'+title+'</div><div class="warn-desc">'+desc+'</div></div>' +
+    '</div>';
+}
+
+function calc() {
+  var resultEl = document.getElementById('result');
+  var warnWrap = document.getElementById('warnWrap');
+  var balance  = parseFloat(document.getElementById('balance').value);
+  var riskPct  = currentRisk;
+
+  // ── MODE A ──────────────────────────────────────────
+  if (mainMode === 'A') {
+    var entry = parseFloat(document.getElementById('entryA').value);
+    var sl    = parseFloat(document.getElementById('slA').value);
+    var tp    = parseFloat(document.getElementById('tpA').value);
+
+    if (!balance || !entry || !sl) {
+      resultEl.innerHTML = '<div class="empty-state">&#9203; Nhap Balance, Entry va SL</div>';
+      warnWrap.innerHTML = ''; return;
+    }
+    var dSL = Math.abs(entry - sl);
+    if (dSL === 0) {
+      resultEl.innerHTML = '<div class="empty-state">&#9888; Entry va SL khong duoc trung nhau</div>';
+      warnWrap.innerHTML = ''; return;
+    }
+
+    var riskCent = balance * riskPct / 100;
+    var lotCent  = Math.round((riskCent / (dSL * 100)) * 100) / 100;
+    var lotStd   = lotCent / 100;
+    var loss     = lotCent * dSL * 100;
+    var dTP=0, profit=0, rrActual=0;
+    if (tp && !isNaN(tp)) {
+      dTP      = Math.abs(tp - entry);
+      profit   = lotCent * dTP * 100;
+      rrActual = dTP / dSL;
+    }
+    var pipUSD  = lotStd;
+    var pipCent = pipUSD * 100;
+    var dirLabel = direction==='buy'
+      ? '<span style="color:#10b981">&#9650; BUY</span>'
+      : '<span style="color:#ef4444">&#9660; SELL</span>';
+
+    resultEl.innerHTML =
+      '<div class="result-row"><span class="lbl">Huong lenh</span><span class="val">'+dirLabel+'</span></div>' +
+      '<div class="result-row highlight"><span class="lbl">LOT CENT</span><span class="val">'+lotCent.toFixed(2)+'</span></div>' +
+      '<div class="result-row"><span class="lbl">Lot Standard</span><span class="val">'+lotStd.toFixed(4)+'</span></div>' +
+      '<div class="result-row"><span class="lbl">Rui ro '+riskPct+'%</span><span class="val" style="color:var(--accent)">'+riskCent.toFixed(0)+' cent</span></div>' +
+      '<div class="result-row"><span class="lbl">Khoang SL</span><span class="val">'+dSL.toFixed(2)+' gia</span></div>' +
+      (tp && !isNaN(tp) ? '<div class="result-row"><span class="lbl">Khoang TP</span><span class="val">'+dTP.toFixed(2)+' gia</span></div>' : '') +
+      '<div class="result-row loss"><span class="lbl">Lo neu SL</span><span class="val">-'+loss.toFixed(0)+'c (~$'+(loss/100).toFixed(2)+')</span></div>' +
+      (tp && !isNaN(tp) ?
+        '<div class="result-row profit"><span class="lbl">Loi neu TP</span><span class="val">+'+profit.toFixed(0)+'c (~$'+(profit/100).toFixed(2)+')</span></div>' +
+        '<div class="result-row rr-row"><span class="lbl">R:R thuc te</span><span class="val">1 : '+rrActual.toFixed(2)+'</span></div>'
+      : '') +
+      '<div class="result-row pip-row"><span class="lbl">Pip value / 0.01 gia</span><span class="val">'+pipCent.toFixed(2)+'c = $'+pipUSD.toFixed(4)+'</span></div>';
+
+    renderWarning(lotCent, balance);
     return;
   }
 
-  const riskCent = balance * riskPercent / 100;
-  const dSL = Math.abs(entry - sl);
-  const dTP = Math.abs(tp - entry);
+  // ── MODE B ──────────────────────────────────────────
+  var entry   = parseFloat(document.getElementById('entryB').value);
+  var lotCent = parseFloat(document.getElementById('lotB').value);
 
-  const lotCent = Math.round((riskCent / (dSL * 100)) * 100) / 100;
-  const lotStd = lotCent / 100;
+  if (!balance || !entry || !lotCent) {
+    resultEl.innerHTML = '<div class="empty-state">&#9203; Nhap Balance, Entry va Lot</div>';
+    warnWrap.innerHTML = '';
+    document.getElementById('slBout').value = '';
+    document.getElementById('tpBout').value = '';
+    return;
+  }
 
-  const loss = lotCent * dSL * 100;
-  const profit = lotCent * dTP * 100;
-  const rr = profit / loss;
+  var lotStd       = lotCent / 100;
+  var riskCentUsed = balance * currentRisk / 100;
+  var dSL          = riskCentUsed / (lotCent * 100);
+  var slPrice      = direction==='buy' ? entry - dSL : entry + dSL;
+  var dTP          = dSL * rrRatio;
+  var tpPrice      = direction==='buy' ? entry + dTP : entry - dTP;
+  var loss         = riskCentUsed;
+  var profit       = lotCent * dTP * 100;
+  var riskPctReal  = balance > 0 ? (loss / balance * 100) : 0;
+  var pipUSD       = lotStd;
+  var pipCent      = pipUSD * 100;
 
-  result.innerText =
-`Rủi ro: ${riskPercent}% = ${riskCent.toFixed(0)} cent
+  document.getElementById('slBout').value = slPrice.toFixed(2);
+  document.getElementById('tpBout').value = tpPrice.toFixed(2);
 
-Khoảng SL: ${dSL.toFixed(2)} giá
-Khoảng TP: ${dTP.toFixed(2)} giá
+  var dirLabel = direction==='buy'
+    ? '<span style="color:#10b981">&#9650; BUY</span>'
+    : '<span style="color:#ef4444">&#9660; SELL</span>';
+  var riskColor = riskPctReal > 5 ? 'var(--danger)' : riskPctReal > 2 ? 'var(--accent)' : 'var(--success)';
 
-Lot Cent: ${lotCent.toFixed(2)}
-Lot Standard: ${lotStd.toFixed(4)}
+  resultEl.innerHTML =
+    '<div class="result-row"><span class="lbl">Huong lenh</span><span class="val">'+dirLabel+'</span></div>' +
+    '<div class="result-row highlight"><span class="lbl">LOT CENT</span><span class="val">'+lotCent.toFixed(2)+'</span></div>' +
+    '<div class="result-row"><span class="lbl">Lot Standard</span><span class="val">'+lotStd.toFixed(4)+'</span></div>' +
+    '<div class="result-row computed-row"><span class="lbl">&#9679; SL Gia</span><span class="val">'+slPrice.toFixed(2)+'</span></div>' +
+    '<div class="result-row computed-row"><span class="lbl">&#9679; TP Gia</span><span class="val">'+tpPrice.toFixed(2)+'</span></div>' +
+    '<div class="result-row"><span class="lbl">Khoang SL</span><span class="val">'+dSL.toFixed(2)+' gia</span></div>' +
+    '<div class="result-row"><span class="lbl">Khoang TP</span><span class="val">'+dTP.toFixed(2)+' gia</span></div>' +
+    '<div class="result-row loss"><span class="lbl">Lo neu SL</span><span class="val">-'+loss.toFixed(0)+'c (~$'+(loss/100).toFixed(2)+')</span></div>' +
+    '<div class="result-row profit"><span class="lbl">Loi neu TP</span><span class="val">+'+profit.toFixed(0)+'c (~$'+(profit/100).toFixed(2)+')</span></div>' +
+    '<div class="result-row rr-row"><span class="lbl">R:R</span><span class="val">1 : '+rrRatio+'</span></div>' +
+    '<div class="result-row"><span class="lbl">% Rui ro thuc te</span><span class="val" style="color:'+riskColor+'">'+riskPctReal.toFixed(2)+'%</span></div>' +
+    '<div class="result-row pip-row"><span class="lbl">Pip value / 0.01 gia</span><span class="val">'+pipCent.toFixed(2)+'c = $'+pipUSD.toFixed(4)+'</span></div>';
 
-Lỗ khi SL: ${loss.toFixed(0)} cent (~$${(loss/100).toFixed(2)})
-Lời khi TP: ${profit.toFixed(0)} cent (~$${(profit/100).toFixed(2)})
-
-RR: 1 : ${rr.toFixed(2)}`;
+  renderWarning(lotCent, balance);
 }
+
+document.getElementById('slA').addEventListener('input', function(){ calcAutoTP_A(); });
+document.getElementById('entryA').addEventListener('input', function(){ calcAutoTP_A(); });
+document.getElementById('tpA').addEventListener('input', function(){ onTpAManual(); });
+
+calc();
 </script>
 </body>
 </html>
