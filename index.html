@@ -104,9 +104,13 @@ input[type=range]::-webkit-slider-thumb:active{transform:scale(1.25)}
   </div>
 
   <div class="card">
-    <div class="card-title">Tai khoan</div>
+    <div class="card-title">Loại Tài khoản</div>
+    <div class="dir-row">
+      <button class="dir-btn buy active" id="accCent" onclick="setAccountType('cent')">CENT</button>
+      <button class="dir-btn buy" id="accUsdt" onclick="setAccountType('usdt')">USDT (STD)</button>
+    </div>
     <div class="field">
-      <label>Balance <span class="hint">(cent)</span></label>
+      <label id="balanceLabel">Balance <span class="hint">(cent)</span></label>
       <input id="balance" type="number" inputmode="numeric" placeholder="VD: 5000" oninput="calc()">
     </div>
   </div>
@@ -129,8 +133,8 @@ input[type=range]::-webkit-slider-thumb:active{transform:scale(1.25)}
           <input id="slA" type="number" step="0.01" inputmode="decimal" placeholder="SL">
         </div>
         <div class="field">
-          <label>Take Profit <span class="hint" id="tpAhint" style="color:var(--success)">&#9679; Tu dong</span></label>
-          <input id="tpA" type="number" step="0.01" inputmode="decimal" placeholder="TP" class="computed-green">
+          <label>Take Profit <span class="hint">(gia)</span></label>
+          <input id="tpA" type="number" step="0.01" inputmode="decimal" placeholder="TP" oninput="calc()">
         </div>
       </div>
     </div>
@@ -149,7 +153,7 @@ input[type=range]::-webkit-slider-thumb:active{transform:scale(1.25)}
         <input id="entryB" type="number" step="0.01" inputmode="decimal" placeholder="VD: 3320.00" oninput="calc()">
       </div>
       <div class="field">
-        <label>Lot Cent <span class="hint">(chon hoac nhap)</span></label>
+        <label id="lotBLabel">Lot Cent <span class="hint">(chon hoac nhap)</span></label>
         <div class="btn-row cols5" style="margin-bottom:8px">
           <button class="qbtn" id="lotBtn001" onclick="setLot(0.01,this)">0.01</button>
           <button class="qbtn" id="lotBtn005" onclick="setLot(0.05,this)">0.05</button>
@@ -165,8 +169,8 @@ input[type=range]::-webkit-slider-thumb:active{transform:scale(1.25)}
           <input id="slBout" type="number" step="0.01" class="computed" readonly placeholder="--">
         </div>
         <div class="field">
-          <label style="color:var(--blue)">&#9679; TP (tu tinh)</label>
-          <input id="tpBout" type="number" step="0.01" class="computed" readonly placeholder="--">
+          <label>Take Profit <span class="hint">(gia)</span></label>
+          <input id="tpB" type="number" step="0.01" inputmode="decimal" placeholder="TP" oninput="calc()">
         </div>
       </div>
     </div>
@@ -174,9 +178,9 @@ input[type=range]::-webkit-slider-thumb:active{transform:scale(1.25)}
 
   <!-- Risk -->
   <div class="card">
-    <div class="risk-label-row">
-      <span class="lbl">Rui ro</span>
-      <span class="risk-badge" id="riskBadge">1%</span>
+    <div class="risk-label-row" style="margin-bottom:12px;">
+      <span class="lbl">Rui ro (%)</span>
+      <input type="number" id="customRisk" step="0.1" value="1" style="width: 70px; padding: 4px 8px; font-size: 14px; text-align: center; border-radius:6px; border:1px solid var(--border); background:#0f0f0f; color:var(--accent); font-family:'JetBrains Mono',monospace;" oninput="syncCustomRisk(this.value)">
     </div>
     <input id="riskSlider" type="range" min="0.5" max="20" step="0.5" value="1" oninput="syncRisk(this.value)">
     <div class="btn-row cols5">
@@ -188,20 +192,11 @@ input[type=range]::-webkit-slider-thumb:active{transform:scale(1.25)}
     </div>
   </div>
 
-  <!-- R:R -->
-  <div class="card">
-    <div class="rr-label">Ti le R:R</div>
-    <div class="btn-row cols4">
-      <button class="qbtn" id="rr05" onclick="setRR(0.5)">1:0.5</button>
-      <button class="qbtn" id="rr1"  onclick="setRR(1)">1:1</button>
-      <button class="qbtn active" id="rr2" onclick="setRR(2)">1:2</button>
-      <button class="qbtn" id="rr3"  onclick="setRR(3)">1:3</button>
-    </div>
-    <div class="btn-row cols4" style="margin-top:6px">
-      <button class="qbtn" id="rr4"  onclick="setRR(4)">1:4</button>
-      <button class="qbtn" id="rr5"  onclick="setRR(5)">1:5</button>
-      <button class="qbtn" id="rr7"  onclick="setRR(7)">1:7</button>
-      <button class="qbtn" id="rr10" onclick="setRR(10)">1:10</button>
+  <!-- R:R Indicator -->
+  <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 15px;">
+    <span class="lbl" style="font-size:11px; font-weight:700; color:var(--muted2); letter-spacing:1px; text-transform:uppercase;">Ti le R:R thuc te</span>
+    <div id="globalRR" style="font-size:16px; font-weight:800; color:var(--blue); font-family:'JetBrains Mono',monospace;">
+      1 : --
     </div>
   </div>
 
@@ -219,6 +214,16 @@ let direction = 'buy';
 let rrRatio = 2;
 let currentRisk = 1;
 let tpAManual = false;
+let accountType = 'cent'; // 'cent' or 'usdt'
+
+function setAccountType(type) {
+  accountType = type;
+  document.getElementById('accCent').classList.toggle('active', type === 'cent');
+  document.getElementById('accUsdt').classList.toggle('active', type === 'usdt');
+  document.getElementById('balanceLabel').innerHTML = type === 'cent' ? 'Balance <span class="hint">(cent)</span>' : 'Balance <span class="hint">(USDT)</span>';
+  document.getElementById('lotBLabel').innerHTML = type === 'cent' ? 'Lot Cent <span class="hint">(chon hoac nhap)</span>' : 'Lot USDT <span class="hint">(chon hoac nhap)</span>';
+  calc();
+}
 
 function setMainMode(m) {
   mainMode = m;
@@ -239,24 +244,22 @@ function setDir(d) {
       sell.classList.toggle('active', d==='sell');
     }
   });
-  if (mainMode==='A') calcAutoTP_A();
-  calc();
-}
-
-function setRR(r) {
-  rrRatio = r;
-  document.querySelectorAll('[id^=rr]').forEach(function(b){ b.classList.remove('active'); });
-  var map = {0.5:'rr05',1:'rr1',2:'rr2',3:'rr3',4:'rr4',5:'rr5',7:'rr7',10:'rr10'};
-  if (map[r]) document.getElementById(map[r]).classList.add('active');
-  if (mainMode==='A') calcAutoTP_A();
   calc();
 }
 
 function setRisk(v) { syncRisk(v); }
 function syncRisk(v) {
-  var val = Math.min(20, Math.max(0.5, parseFloat(v)));
+  var val = Math.max(0.1, parseFloat(v));
   document.getElementById('riskSlider').value = val;
-  document.getElementById('riskBadge').textContent = val + '%';
+  document.getElementById('customRisk').value = val;
+  currentRisk = val;
+  calc();
+}
+
+function syncCustomRisk(v) {
+  var val = parseFloat(v);
+  if (isNaN(val) || val <= 0) return;
+  document.getElementById('riskSlider').value = val;
   currentRisk = val;
   calc();
 }
@@ -265,28 +268,6 @@ function setLot(v, btn) {
   document.getElementById('lotB').value = v;
   document.querySelectorAll('#panelB .qbtn').forEach(function(b){ b.classList.remove('active'); });
   btn.classList.add('active');
-  calc();
-}
-
-function calcAutoTP_A() {
-  var entry = parseFloat(document.getElementById('entryA').value);
-  var sl    = parseFloat(document.getElementById('slA').value);
-  if (!entry || !sl || isNaN(entry) || isNaN(sl)) return;
-  var dSL = Math.abs(entry - sl);
-  var dTP = dSL * rrRatio;
-  var tp  = direction==='buy' ? entry+dTP : entry-dTP;
-  var tpEl = document.getElementById('tpA');
-  tpEl.value = tp.toFixed(2);
-  tpEl.className = 'computed-green';
-  tpAManual = false;
-  document.getElementById('tpAhint').innerHTML = '<span style="color:var(--success)">&#9679; Tu dong</span>';
-  calc();
-}
-
-function onTpAManual() {
-  tpAManual = true;
-  document.getElementById('tpA').className = '';
-  document.getElementById('tpAhint').innerHTML = '<span style="color:var(--muted2)">Thu cong</span>';
   calc();
 }
 
@@ -322,102 +303,212 @@ function calc() {
     var sl    = parseFloat(document.getElementById('slA').value);
     var tp    = parseFloat(document.getElementById('tpA').value);
 
+    // Auto Buy/Sell based on Entry and SL
+    if (!isNaN(entry) && !isNaN(sl)) {
+      var autoDir = entry > sl ? 'buy' : 'sell';
+      if (direction !== autoDir) {
+        direction = autoDir;
+        ['A','B'].forEach(function(m) {
+          var bBtn = document.getElementById('dirBuy'+m);
+          var sBtn = document.getElementById('dirSell'+m);
+          if (bBtn) bBtn.classList.toggle('active', direction === 'buy');
+          if (sBtn) sBtn.classList.toggle('active', direction === 'sell');
+        });
+      }
+    }
+
     if (!balance || !entry || !sl) {
       resultEl.innerHTML = '<div class="empty-state">&#9203; Nhap Balance, Entry va SL</div>';
-      warnWrap.innerHTML = ''; return;
+      warnWrap.innerHTML = '';
+      document.getElementById('globalRR').innerHTML = '1 : --';
+      return;
     }
     var dSL = Math.abs(entry - sl);
     if (dSL === 0) {
       resultEl.innerHTML = '<div class="empty-state">&#9888; Entry va SL khong duoc trung nhau</div>';
-      warnWrap.innerHTML = ''; return;
+      warnWrap.innerHTML = '';
+      document.getElementById('globalRR').innerHTML = '1 : --';
+      return;
     }
 
-    var riskCent = balance * riskPct / 100;
-    var lotCent  = Math.round((riskCent / (dSL * 100)) * 100) / 100;
-    var lotStd   = lotCent / 100;
-    var loss     = lotCent * dSL * 100;
-    var dTP=0, profit=0, rrActual=0;
+    var riskMoney = balance * riskPct / 100;
+    var lotCalculated = riskMoney / (dSL * 100);
+    
+    var lotCent, lotStd;
+    if (accountType === 'cent') {
+      lotCent = Math.round(lotCalculated * 100) / 100;
+      lotStd  = lotCent / 100;
+    } else {
+      lotStd = Math.round(lotCalculated * 100) / 100;
+      lotCent = lotStd * 100;
+    }
+    
+    var lossCent, lossUsd;
+    if (accountType === 'cent') {
+        lossCent = lotCent * dSL * 100;
+        lossUsd = lossCent / 100;
+    } else {
+        lossUsd = lotStd * dSL * 100;
+        lossCent = lossUsd * 100;
+    }
+    
+    var dTP=0, profitCent=0, profitUsd=0, rrActual=0;
     if (tp && !isNaN(tp)) {
       dTP      = Math.abs(tp - entry);
-      profit   = lotCent * dTP * 100;
+      if (accountType === 'cent') {
+          profitCent = lotCent * dTP * 100;
+          profitUsd = profitCent / 100;
+      } else {
+          profitUsd = lotStd * dTP * 100;
+          profitCent = profitUsd * 100;
+      }
       rrActual = dTP / dSL;
     }
+    
+    var rrFormatted = '--';
+    if (rrActual > 0) {
+      rrFormatted = (Math.abs(rrActual - Math.round(rrActual)) < 0.001) ? Math.round(rrActual).toString() : rrActual.toFixed(2);
+      document.getElementById('globalRR').innerHTML = '1 : ' + rrFormatted;
+    } else {
+      document.getElementById('globalRR').innerHTML = '1 : --';
+    }
+
     var pipUSD  = lotStd;
     var pipCent = pipUSD * 100;
     var dirLabel = direction==='buy'
       ? '<span style="color:#10b981">&#9650; BUY</span>'
       : '<span style="color:#ef4444">&#9660; SELL</span>';
 
+    var highlightLot = accountType === 'cent' ? 
+        '<div class="result-row highlight"><span class="lbl">LOT CENT</span><span class="val">'+lotCent.toFixed(2)+'</span></div>' :
+        '<div class="result-row highlight"><span class="lbl">LOT USDT</span><span class="val">'+lotStd.toFixed(2)+'</span></div>';
+        
+    var riskCurrency = accountType === 'cent' ? 'cent' : 'USDT';
+    var lossLabel = accountType === 'cent' ? '-'+lossCent.toFixed(0)+'c (~$'+lossUsd.toFixed(2)+')' : '-$'+lossUsd.toFixed(2);
+    var profitLabel = accountType === 'cent' ? '+'+profitCent.toFixed(0)+'c (~$'+profitUsd.toFixed(2)+')' : '+$'+profitUsd.toFixed(2);
+
     resultEl.innerHTML =
       '<div class="result-row"><span class="lbl">Huong lenh</span><span class="val">'+dirLabel+'</span></div>' +
-      '<div class="result-row highlight"><span class="lbl">LOT CENT</span><span class="val">'+lotCent.toFixed(2)+'</span></div>' +
-      '<div class="result-row"><span class="lbl">Lot Standard</span><span class="val">'+lotStd.toFixed(4)+'</span></div>' +
-      '<div class="result-row"><span class="lbl">Rui ro '+riskPct+'%</span><span class="val" style="color:var(--accent)">'+riskCent.toFixed(0)+' cent</span></div>' +
+      highlightLot +
+      '<div class="result-row"><span class="lbl">Rui ro '+riskPct+'%</span><span class="val" style="color:var(--accent)">'+riskMoney.toFixed(2)+' '+riskCurrency+'</span></div>' +
       '<div class="result-row"><span class="lbl">Khoang SL</span><span class="val">'+dSL.toFixed(2)+' gia</span></div>' +
       (tp && !isNaN(tp) ? '<div class="result-row"><span class="lbl">Khoang TP</span><span class="val">'+dTP.toFixed(2)+' gia</span></div>' : '') +
-      '<div class="result-row loss"><span class="lbl">Lo neu SL</span><span class="val">-'+loss.toFixed(0)+'c (~$'+(loss/100).toFixed(2)+')</span></div>' +
+      '<div class="result-row loss"><span class="lbl">Lo neu SL</span><span class="val">'+lossLabel+'</span></div>' +
       (tp && !isNaN(tp) ?
-        '<div class="result-row profit"><span class="lbl">Loi neu TP</span><span class="val">+'+profit.toFixed(0)+'c (~$'+(profit/100).toFixed(2)+')</span></div>' +
-        '<div class="result-row rr-row"><span class="lbl">R:R thuc te</span><span class="val">1 : '+rrActual.toFixed(2)+'</span></div>'
+        '<div class="result-row profit"><span class="lbl">Loi neu TP</span><span class="val">'+profitLabel+'</span></div>' +
+        '<div class="result-row rr-row"><span class="lbl">R:R thuc te</span><span class="val">1 : '+rrFormatted+'</span></div>'
       : '') +
       '<div class="result-row pip-row"><span class="lbl">Pip value / 0.01 gia</span><span class="val">'+pipCent.toFixed(2)+'c = $'+pipUSD.toFixed(4)+'</span></div>';
 
-    renderWarning(lotCent, balance);
+    renderWarning(accountType === 'cent' ? lotCent : lotStd*100, accountType === 'cent' ? balance : balance*100);
     return;
   }
 
   // ── MODE B ──────────────────────────────────────────
   var entry   = parseFloat(document.getElementById('entryB').value);
-  var lotCent = parseFloat(document.getElementById('lotB').value);
+  var lotInput = parseFloat(document.getElementById('lotB').value);
+  var tp      = parseFloat(document.getElementById('tpB').value);
 
-  if (!balance || !entry || !lotCent) {
+  // Auto Buy/Sell based on Entry and TP
+  if (!isNaN(entry) && !isNaN(tp)) {
+    var autoDir = tp > entry ? 'buy' : 'sell';
+    if (direction !== autoDir) {
+      direction = autoDir;
+      ['A','B'].forEach(function(m) {
+        var bBtn = document.getElementById('dirBuy'+m);
+        var sBtn = document.getElementById('dirSell'+m);
+        if (bBtn) bBtn.classList.toggle('active', direction === 'buy');
+        if (sBtn) sBtn.classList.toggle('active', direction === 'sell');
+      });
+    }
+  }
+
+  if (!balance || !entry || !lotInput) {
     resultEl.innerHTML = '<div class="empty-state">&#9203; Nhap Balance, Entry va Lot</div>';
     warnWrap.innerHTML = '';
     document.getElementById('slBout').value = '';
-    document.getElementById('tpBout').value = '';
+    document.getElementById('globalRR').innerHTML = '1 : --';
     return;
   }
 
-  var lotStd       = lotCent / 100;
-  var riskCentUsed = balance * currentRisk / 100;
-  var dSL          = riskCentUsed / (lotCent * 100);
+  var lotCent, lotStd;
+  if (accountType === 'cent') {
+      lotCent = lotInput;
+      lotStd = lotCent / 100;
+  } else {
+      lotStd = lotInput;
+      lotCent = lotStd * 100;
+  }
+  
+  var riskMoneyUsed = balance * currentRisk / 100;
+  var dSL = riskMoneyUsed / ((accountType === 'cent' ? lotCent : lotStd) * 100);
+  
   var slPrice      = direction==='buy' ? entry - dSL : entry + dSL;
-  var dTP          = dSL * rrRatio;
-  var tpPrice      = direction==='buy' ? entry + dTP : entry - dTP;
-  var loss         = riskCentUsed;
-  var profit       = lotCent * dTP * 100;
-  var riskPctReal  = balance > 0 ? (loss / balance * 100) : 0;
+  
+  var lossCent, lossUsd;
+  if (accountType === 'cent') {
+      lossCent = riskMoneyUsed;
+      lossUsd = lossCent / 100;
+  } else {
+      lossUsd = riskMoneyUsed;
+      lossCent = lossUsd * 100;
+  }
+  
+  var dTP=0, profitCent=0, profitUsd=0, rrActual=0;
+  if (tp && !isNaN(tp)) {
+    dTP = Math.abs(tp - entry);
+    if (accountType === 'cent') {
+        profitCent = lotCent * dTP * 100;
+        profitUsd = profitCent / 100;
+    } else {
+        profitUsd = lotStd * dTP * 100;
+        profitCent = profitUsd * 100;
+    }
+    rrActual = dTP / dSL;
+  }
+  
+  var rrFormatted = '--';
+  if (rrActual > 0) {
+    rrFormatted = (Math.abs(rrActual - Math.round(rrActual)) < 0.001) ? Math.round(rrActual).toString() : rrActual.toFixed(2);
+    document.getElementById('globalRR').innerHTML = '1 : ' + rrFormatted;
+  } else {
+    document.getElementById('globalRR').innerHTML = '1 : --';
+  }
+
+  var riskPctReal  = balance > 0 ? (riskMoneyUsed / balance * 100) : 0;
   var pipUSD       = lotStd;
   var pipCent      = pipUSD * 100;
 
   document.getElementById('slBout').value = slPrice.toFixed(2);
-  document.getElementById('tpBout').value = tpPrice.toFixed(2);
 
   var dirLabel = direction==='buy'
     ? '<span style="color:#10b981">&#9650; BUY</span>'
     : '<span style="color:#ef4444">&#9660; SELL</span>';
   var riskColor = riskPctReal > 5 ? 'var(--danger)' : riskPctReal > 2 ? 'var(--accent)' : 'var(--success)';
 
+  var highlightLot = accountType === 'cent' ? 
+        '<div class="result-row highlight"><span class="lbl">LOT CENT</span><span class="val">'+lotCent.toFixed(2)+'</span></div>' :
+        '<div class="result-row highlight"><span class="lbl">LOT USDT</span><span class="val">'+lotStd.toFixed(2)+'</span></div>';
+        
+  var lossLabel = accountType === 'cent' ? '-'+lossCent.toFixed(0)+'c (~$'+lossUsd.toFixed(2)+')' : '-$'+lossUsd.toFixed(2);
+  var profitLabel = accountType === 'cent' ? '+'+profitCent.toFixed(0)+'c (~$'+profitUsd.toFixed(2)+')' : '+$'+profitUsd.toFixed(2);
+
   resultEl.innerHTML =
     '<div class="result-row"><span class="lbl">Huong lenh</span><span class="val">'+dirLabel+'</span></div>' +
-    '<div class="result-row highlight"><span class="lbl">LOT CENT</span><span class="val">'+lotCent.toFixed(2)+'</span></div>' +
-    '<div class="result-row"><span class="lbl">Lot Standard</span><span class="val">'+lotStd.toFixed(4)+'</span></div>' +
+    highlightLot +
     '<div class="result-row computed-row"><span class="lbl">&#9679; SL Gia</span><span class="val">'+slPrice.toFixed(2)+'</span></div>' +
-    '<div class="result-row computed-row"><span class="lbl">&#9679; TP Gia</span><span class="val">'+tpPrice.toFixed(2)+'</span></div>' +
     '<div class="result-row"><span class="lbl">Khoang SL</span><span class="val">'+dSL.toFixed(2)+' gia</span></div>' +
-    '<div class="result-row"><span class="lbl">Khoang TP</span><span class="val">'+dTP.toFixed(2)+' gia</span></div>' +
-    '<div class="result-row loss"><span class="lbl">Lo neu SL</span><span class="val">-'+loss.toFixed(0)+'c (~$'+(loss/100).toFixed(2)+')</span></div>' +
-    '<div class="result-row profit"><span class="lbl">Loi neu TP</span><span class="val">+'+profit.toFixed(0)+'c (~$'+(profit/100).toFixed(2)+')</span></div>' +
-    '<div class="result-row rr-row"><span class="lbl">R:R</span><span class="val">1 : '+rrRatio+'</span></div>' +
+    (tp && !isNaN(tp) ? '<div class="result-row"><span class="lbl">Khoang TP</span><span class="val">'+dTP.toFixed(2)+' gia</span></div>' : '') +
+    '<div class="result-row loss"><span class="lbl">Lo neu SL</span><span class="val">'+lossLabel+'</span></div>' +
+    (tp && !isNaN(tp) ?
+      '<div class="result-row profit"><span class="lbl">Loi neu TP</span><span class="val">'+profitLabel+'</span></div>' +
+      '<div class="result-row rr-row"><span class="lbl">R:R thuc te</span><span class="val">1 : '+rrFormatted+'</span></div>'
+    : '') +
     '<div class="result-row"><span class="lbl">% Rui ro thuc te</span><span class="val" style="color:'+riskColor+'">'+riskPctReal.toFixed(2)+'%</span></div>' +
     '<div class="result-row pip-row"><span class="lbl">Pip value / 0.01 gia</span><span class="val">'+pipCent.toFixed(2)+'c = $'+pipUSD.toFixed(4)+'</span></div>';
 
-  renderWarning(lotCent, balance);
+  renderWarning(accountType === 'cent' ? lotCent : lotStd*100, accountType === 'cent' ? balance : balance*100);
 }
-
-document.getElementById('slA').addEventListener('input', function(){ calcAutoTP_A(); });
-document.getElementById('entryA').addEventListener('input', function(){ calcAutoTP_A(); });
-document.getElementById('tpA').addEventListener('input', function(){ onTpAManual(); });
 
 calc();
 </script>
